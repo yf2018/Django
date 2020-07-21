@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>city</title>
+    <script type="text/javascript" src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        .div1 {
+            margin: 20px auto;
+            width: 600px;
+            text-align: center;
+            height: 440px;
+        }
+
+        div {
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        .td:hover {
+            color: aqua;
+        }
+
+        div ul li {
+            border-top-right-radius: 5px;
+            border-top-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            border-bottom-left-radius: 5px;
+            border: 0;
+            width: 36px;
+            height: 36px;
+            font: 16px arial;
+            background: skyblue;
+            color: #fff;
+            font-weight: 400;
+            display: inline-block;
+            margin-right: 12px;
+        }
+
+        div ul li a {
+            text-decoration: none;
+            line-height: 36px;
+            display: block;
+            color: inherit;
+        }
+
+        div ul li span {
+            line-height: 36px;
+        }
+
+        .prev {
+            width: 80px;
+            height: 36px;
+        }
+
+        .next {
+            width: 80px;
+            height: 36px;
+        }
+
+        div ul li:hover {
+            background: #4E6EF2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class='div1'>
+        <table width=100% border='1' cellspacing='0' cellpadding='0' align=”center”>
+{#            <caption>基本的表格布局</caption>#}
+            <tr class="th">
+                <th>日期</th>
+                <th>质量等级</th>
+                <th>AQI指数</th>
+                <th>当天AQI排名</th>
+                <th>PM2.5</th>
+                <th>PM10</th>
+                <th>So2</th>
+                <th>No2</th>
+                <th>Co</th>
+                <th>O3</th>
+            </tr>
+            {% for i in context.page.object_list %}
+            <tr class="td">
+                <td>{{ i.0 }}</td>
+                <td>{{ i.1 }}</td>
+                <td>{{ i.2 }}</td>
+                <td>{{ i.3 }}</td>
+                <td>{{ i.4 }}</td>
+                <td>{{ i.5 }}</td>
+                <td>{{ i.6 }}</td>
+                <td>{{ i.7 }}</td>
+                <td>{{ i.8 }}</td>
+                <td>{{ i.9 }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div>
+        <ul>
+            {% if context.page.has_previous %}
+            <li class="prev">
+                <a
+                    href="/search/?search={{ context.city }}&pindex={{ context.page.previous_page_number }}"><span>&lt;上一页</span></a>
+            </li>
+            {% endif %}
+
+            {% for pindex in context.page_range %}
+            {% if pindex == context.page.number %}
+            <li class='active'><span>{{ pindex }}</span></li>
+            {%else%}
+            {% if pindex == '...' %}
+            <li>
+                <span>{{ pindex }}</span>
+            </li>
+            {% else %}
+            {% if pindex == 1 %}
+            <li>
+                <a href="/search/?search={{ context.city }}&pindex={{ pindex }}"><span>首页</span></a>
+            </li>
+            {% else %}
+            {% if pindex == context.page.paginator.num_pages %}
+            <li>
+                <a href="/search/?search={{ context.city }}&pindex={{ pindex }}"><span>末页</span></a>
+            </li>
+            {% else %}
+            <li>
+                <a href="/search/?search={{ context.city }}&pindex={{ pindex }}"><span>{{ pindex }}</span></a>
+            </li>
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+
+            {% if context.page.has_next %}
+            <li class="next">
+                <a href="/search/?search={{ context.city }}&pindex={{ context.page.next_page_number }}"><span>下一页&gt;</span></a>
+            </li>
+            {% endif %}
+        </ul>
+        <br>
+        <p>(共{{ context.page.paginator.num_pages }}页，当前第{{ context.page.number }}页，共有{{ context.page.paginator.count }}条数据)
+        </p>
+    </div>
+
+    <div id="aqi" style="width:500px;height:400px;"></div>
+    <div id="pm25" style="width:500px;height:400px;"></div>
+    <div id="pm10" style="width:500px;height:400px;"></div>
+    <div id="so2" style="width:500px;height:400px;"></div>
+    <div id="no2" style="width:500px;height:400px;"></div>
+    <div id="co" style="width:500px;height:400px;"></div>
+    <div id="o3" style="width:500px;height:400px;"></div>
+
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('aqi'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['AQI']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'AQI',
+                type: 'line',
+                data: {{context.aqi_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('pm25'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['PM2.5']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'PM2.5',
+                type: 'line',
+                data: {{context.pm25_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('pm10'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['PM10']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'PM10',
+                type: 'line',
+                data: {{context.pm10_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('so2'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['So2']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'So2',
+                type: 'line',
+                data: {{context.so2_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('no2'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['No2']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'No2',
+                type: 'line',
+                data: {{context.no2_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('co'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['Co']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'Co',
+                type: 'line',
+                data: {{context.co_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+    <script type="text/javascript">
+        // 初始化图表标签
+        var myChart = echarts.init(document.getElementById('o3'));
+        {#for i in context.page.object_list:#}
+        var options = {
+            //定义一个标题
+            title: {
+                text: '{{context.city}}'
+            },
+            legend: {
+                data: ['O3']
+            },
+            //X轴设置
+            xAxis: {
+                data: {{context.date_list|safe }}
+            },
+            yAxis: {
+            },
+            //name=legend.data的时候才能显示图例
+            series: [{
+                name: 'O3',
+                type: 'line',
+                data: {{context.o3_list|safe }}
+            }]
+        };
+        myChart.setOption(options);
+    </script>
+</body>
+</html>

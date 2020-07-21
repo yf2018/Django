@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <title>AQI</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        form {
+            margin: 10px 10px;
+            display: inline;
+        }
+
+        li a {
+            margin: 10px 10px;
+            text-decoration: none;
+        }
+
+        p a:hover {
+            color: aqua;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h2>空气质量指数查询</h2>
+        <form method="get" action="/search/">
+            {% csrf_token %}
+            <input type="search" placeholder="" required name="search">
+            <button type="submit">按城市名搜索</button>
+
+        </form>
+    </div>
+    <div>
+        <ul>
+            <li>
+                <a href=""><span>广元</span></a>
+            </li>
+            <li>
+                <a href=""><span>成都</span></a>
+            </li>
+            <li>
+                <a href=""><span>重庆</span></a>
+            </li>
+            <li>
+                <a href=""><span>上海</span></a>
+            </li>
+        </ul>
+
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            $("a").click(function () {
+                var href = $(this).text()
+                var url = "/search/?search="+href
+                $("a").attr("href",url);
+            })
+        })
+
+        $(document).ajaxSend(function (event, xhr, settings) {
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie != '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            function sameOrigin(url) {
+                // url could be relative or scheme relative or absolute
+                var host = document.location.host; // host + port
+                var protocol = document.location.protocol;
+                var sr_origin = '//' + host;
+                var origin = protocol + sr_origin;
+                // Allow absolute or scheme relative URLs to same origin
+                return (url == origin || url.slice(0, origin.length + 1) == origin + '/') ||
+                    (url == sr_origin || url.slice(0, sr_origin.length + 1) == sr_origin + '/') ||
+                    // or any other URL that isn't scheme relative or absolute i.e relative.
+                    !(/^(\/\/|http:|https:).*/.test(url));
+            }
+            function safeMethod(method) {
+                return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+            }
+
+            if (!safeMethod(settings.type) && sameOrigin(settings.url)) {
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        });
+        $(function () {
+            var obj = {
+                "cityname": $("#cityname").text(),
+            };
+            $("#cityname").click(function () {
+                $.ajax({
+                    async : false,
+                    type: 'POST',
+                    url: 'city/',
+                    data: JSON.stringify(obj),
+                    success: function (data) {
+                        console.log(obj)
+                    },
+                    error: function (e) {
+                        console.log('error')
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
